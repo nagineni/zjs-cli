@@ -7,6 +7,7 @@ var device = require('./lib/usbDevice'),
     encoding = require('text-encoding'),
     fs = require('fs'),
     ihex = require('./ihex-web.js'),
+    readline = require('readline'),
     source = null,
     usbDevice = null,
     webInterface = null;
@@ -185,7 +186,7 @@ function transfer(source) {
         send(line + '\n');
     }
     send('run temp.dat' + '\n');
-    send('set transfer raw\n');
+    send('set transfer raw\r\n');
 }
 
 function parseData() {
@@ -197,7 +198,12 @@ function parseData() {
 
         stream = lines.pop();
         for (var i in lines) {
-            console.log(lines[i]);
+            // Workaround to handle 'acm>' prompt with color code.
+            if (lines[i].includes("acm>") && lines[i].length === 18) {
+               process.stdout.write(lines[i].replace(/\r/g,""));
+            }else {
+               console.log(lines[i]);
+            }
         }
     };
 }
@@ -213,6 +219,7 @@ function init() {
             usbDevice.on('data', (event) => {
                 var skip = true,
                     str = new encoding.TextDecoder('utf-8').decode(event.data);
+
                  if (str === 'raw') {
                      rawMode = true;
                  } else if (str === 'ihex') {
@@ -271,6 +278,27 @@ function exitHandler() {
         });
     }
 }
+
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
+rl.on('line', (input) => {
+    if (!input) {
+        process.stdout.write("\u001b[33macm> \u001b[39;0m");
+    } else if (input === "load" || input === 'eval') {
+        console.log("'load' and 'eval' commands are unsupported in CLI mode");
+        // print 'acm>' prompt.
+        process.stdout.write("\u001b[33macm> \u001b[39;0m");
+    } else {
+        send(input + '\r\n');
+    }
+});
+
+rl.on('SIGINT', () => {
+    exitHandler();
+});
 
 // Press Ctrl+C to exit the process
 process.on('SIGINT', exitHandler);
