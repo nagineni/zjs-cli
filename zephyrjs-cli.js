@@ -4,7 +4,9 @@
 
 var device = require('./lib/usbDevice'),
     args = process.argv.slice(2),
-    usbDevice = null;
+    fs = require('fs'),
+    usbDevice = null,
+    webInterface = null;
 
 var options = {
     help: false,
@@ -92,7 +94,40 @@ if (options.debug < 0 || options.debug > 4) {
     device.setDebugLevel(options.debug);
 }
 
+function getWebUSBDevicesList() {
+    var jsonConf = fs.readFileSync(__dirname + '/config/devices.json', 'utf8');
+    var devices = JSON.parse(jsonConf);
+    return devices;
+}
+
+function isWebUSBDevice(vid, pid) {
+    var  list = getWebUSBDevicesList();
+
+    for (var i in list) {
+        if (list[i].vendorID == vid && list[i].productID == pid) {
+            webInterface = list[i].WebUSBInterface;
+            return true;
+        }
+    }
+    return false;
+}
+
 if (source) {
+    if (!options.vid || !options.pid) {
+        var devices = getWebUSBDevicesList();
+        var firstDevice = devices[Object.keys(devices)[0]];
+        if (!firstDevice) {
+            console.log('No WebUSB device exist in the configuration');
+            process.exit(0);
+        }
+        options.vid = firstDevice.vendorID;
+        options.pid = firstDevice.productID;
+        webInterface = firstDevice.WebUSBInterface;
+    } else if (!isWebUSBDevice(options.vid, options.pid)) {
+        console.log('No WebUSB device exist in the configuration for the given VID and PID');
+        process.exit(0);
+    }
+
     device.findDevice(options.vid, options.pid).then(function(device) {
         usbDevice = device;
         init();
