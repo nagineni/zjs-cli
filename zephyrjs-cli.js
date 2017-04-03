@@ -3,7 +3,8 @@
 'use strict';
 
 var device = require('./lib/usbDevice'),
-    args = process.argv.slice(2);
+    args = process.argv.slice(2),
+    usbDevice = null;
 
 var options = {
     help: false,
@@ -91,3 +92,10 @@ if (options.debug < 0 || options.debug > 4) {
     device.setDebugLevel(options.debug);
 }
 
+if (source) {
+    device.findDevice(options.vid, options.pid).then(function(device) {
+        usbDevice = device;
+    }).catch(function(error) {
+        console.log('USB device error: ' + error);
+    });
+}
