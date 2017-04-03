@@ -22,8 +22,8 @@ var options = {
 
 const usage = 'usage: node iotjs-cli.js -f <JavaScript file to upload>\n' +
 'options: \n' +
-'  -d --debug <level: 0 to 4>       Set the libdevice debug level\n' +
-'  -h --help                        output usage information\n' +
+'  -d --debug <level: 0 to 4>       Set the libusb debug level\n' +
+'  -h --help                        Output usage information\n' +
 '  -l --list                        List all available USB devices\n' +
 '  -v --vendor-id <Vedor ID>        Vedor ID of the USB device\n' +
 '  -p --product-id <Product ID>     Product ID of the USB device\n' +
