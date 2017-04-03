@@ -95,7 +95,16 @@ if (options.debug < 0 || options.debug > 4) {
 if (source) {
     device.findDevice(options.vid, options.pid).then(function(device) {
         usbDevice = device;
+        init();
     }).catch(function(error) {
         console.log('USB device error: ' + error);
     });
+}
+
+function init() {
+    usbDevice.open().then(function() {
+        }).catch(function(error) {
+            console.log('USB Error: ' + error);
+            exitHandler();
+        });
 }
