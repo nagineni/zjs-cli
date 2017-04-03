@@ -188,9 +188,53 @@ function transfer(source) {
     send('set transfer raw\n');
 }
 
+function parseData() {
+    var stream = '';
+
+    return function(data) {
+        stream += data;
+        var lines = stream.split('\n');
+
+        stream = lines.pop();
+        for (var i in lines) {
+            console.log(lines[i]);
+        }
+    };
+}
+
 function init() {
     usbDevice.open().then(() => {
             // Setup event handlers.
+            var printData = parseData(),
+                rawMode = true,
+                previousRead;
+
+            // Setup event handlers.
+            usbDevice.on('data', (event) => {
+                var skip = true,
+                    str = new encoding.TextDecoder('utf-8').decode(event.data);
+                 if (str === 'raw') {
+                     rawMode = true;
+                 } else if (str === 'ihex') {
+                     rawMode = false;
+                 }
+
+                 skip = !rawMode && /^(\n|\[.*\])/.test(str);
+                 if (!skip) {
+                     if (str.length === 1 &&
+                         str.charCodeAt(0) !== 13 &&
+                         str.charCodeAt(0) !== 10 &&
+                         previousRead !== undefined &&
+                         previousRead.charCodeAt(
+                            previousRead.length - 1) === 13) {
+                         str = '\n' + str;
+                     }
+
+                     previousRead = str;
+                     printData(previousRead);
+                    }
+            });
+
             usbDevice.on('error', (event) => {
                 console.log('Error on ' + event.type + ': ' + event.error);
                 process.exit();
