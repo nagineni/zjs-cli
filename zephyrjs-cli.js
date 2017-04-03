@@ -17,8 +17,8 @@ var options = {
 const usage = 'usage: node iotjs-cli.js -f <JavaScript file to upload>\n' +
 'options: \n' +
 '  -d --debug <level: 0 to 4>       Set the libdevice debug level\n' +
-'  -h, --help                       output usage information\n' +
-'  -l, --list                       List all available USB devices\n' +
+'  -h --help                        output usage information\n' +
+'  -l --list                        List all available USB devices\n' +
 '  -v --vendor-id <Vedor ID>        Vedor ID of the USB device\n' +
 '  -p --product-id <Product ID>     Product ID of the USB device\n' +
 '  -f --file <JavaScript file>      JavaScript file to upload and execute\n';
@@ -84,4 +84,10 @@ if (options.list == true) {
     process.exit(0);
 }
 
+if (options.debug < 0 || options.debug > 4) {
+    console.log(usage);
+    process.exit(0);
+} else {
+    device.setDebugLevel(options.debug);
+}
 
