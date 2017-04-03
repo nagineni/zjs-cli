@@ -190,6 +190,17 @@ function transfer(source) {
 
 function init() {
     usbDevice.open().then(() => {
+            // Setup event handlers.
+            usbDevice.on('error', (event) => {
+                console.log('Error on ' + event.type + ': ' + event.error);
+                process.exit();
+            });
+
+            usbDevice.on('detached', (event) => {
+                console.log('Detached device');
+                process.exit();
+            });
+
             return usbDevice.claimInterface(webInterface ? webInterface : 2);
         }).then(() => {
             return usbDevice.listen();
