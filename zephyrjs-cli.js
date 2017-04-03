@@ -108,3 +108,19 @@ function init() {
             exitHandler();
         });
 }
+
+// Cleanup when interrupted
+function exitHandler() {
+    if (usbDevice) {
+        usbDevice.close().then(function() {
+            console.log('Device closed');
+            process.exit();
+        }).catch(function(error) {
+            console.log('Failed to close the USB device!');
+            process.exit();
+        });
+    }
+}
+
+// Press Ctrl+C to exit the process
+process.on('SIGINT', exitHandler);
