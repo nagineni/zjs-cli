@@ -291,6 +291,8 @@ rl.on('line', (input) => {
         console.log("'load' and 'eval' commands are unsupported in CLI mode");
         // print 'acm>' prompt.
         process.stdout.write("\u001b[33macm> \u001b[39;0m");
+    } else if (input === "quit" || input === 'exit') {
+        exitHandler();
     } else {
         send(input + '\r\n');
     }
