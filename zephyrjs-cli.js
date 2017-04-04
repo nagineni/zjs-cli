@@ -58,7 +58,7 @@ for (var i = 0; i < args.length; i++) {
                 options.help = true;
                 break;
             }
-            options.pid = pid;
+            options.pid = parseInt(pid);
             break;
         case '-v':
         case '--vendor-id':
@@ -67,7 +67,7 @@ for (var i = 0; i < args.length; i++) {
                 options.help = true;
                 break;
             }
-            options.vid = vid;
+            options.vid = parseInt(vid);
             break;
         case '-f':
         case '--file':
@@ -83,6 +83,16 @@ for (var i = 0; i < args.length; i++) {
 
 if (!args.length || options.help == true) {
     console.log(usage);
+    process.exit(0);
+}
+
+if (options.pid !== null && !Number.isInteger(options.pid)) {
+    console.log("Product ID must be a non-empty numeric value.");
+    process.exit(0);
+}
+
+if (options.vid !== null && !Number.isInteger(options.vid)) {
+    console.log("Vendor ID must be a non-empty numeric value.");
     process.exit(0);
 }
 
@@ -115,7 +125,8 @@ function isWebUSBDevice(vid, pid) {
     var  list = getWebUSBDevicesList();
 
     for (var i in list) {
-        if (list[i].vendorID == vid && list[i].productID == pid) {
+        if (parseInt(list[i].vendorID) === vid &&
+                parseInt(list[i].productID) === pid) {
             webInterface = list[i].WebUSBInterface;
             return true;
         }
@@ -134,6 +145,7 @@ if (source) {
         options.vid = firstDevice.vendorID;
         options.pid = firstDevice.productID;
         webInterface = firstDevice.WebUSBInterface;
+        console.log("No VID or PID provided, so try to connect to the first known WebUSB device in the configuration.");
     } else if (!isWebUSBDevice(options.vid, options.pid)) {
         console.log('No WebUSB device exist in the configuration for the given VID and PID');
         process.exit(0);
