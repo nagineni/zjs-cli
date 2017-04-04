@@ -18,17 +18,19 @@ var options = {
     vid: null,
     pid: null,
     jsfile: null,
-    debug: 0
+    debug: 0,
+    webusbdevices: false
 };
 
 const usage = 'usage: node iotjs-cli.js -f <JavaScript file to upload>\n' +
 'options: \n' +
 '  -d --debug <level: 0 to 4>       Set the libusb debug level\n' +
 '  -h --help                        Output usage information\n' +
-'  -l --list                        List all available USB devices\n' +
+'  -l --list                        List all connected USB devices\n' +
 '  -v --vendor-id <Vedor ID>        Vedor ID of the USB device\n' +
 '  -p --product-id <Product ID>     Product ID of the USB device\n' +
-'  -f --file <JavaScript file>      JavaScript file to upload and execute\n';
+'  -f --file <JavaScript file>      JavaScript file to upload and execute\n' +
+'  -w --webusblist                  List all connected WebUSB devices\n';
 
 for (var i = 0; i < args.length; i++) {
     var arg = args[i];
@@ -41,6 +43,10 @@ for (var i = 0; i < args.length; i++) {
         case '-l':
         case '--list':
             options.list = true;
+            break;
+        case '-w':
+        case '--webusblist':
+            options.webusblist = true;
             break;
         case '-d':
         case '--debuglevel':
@@ -96,13 +102,15 @@ if (options.vid !== null && !Number.isInteger(options.vid)) {
     process.exit(0);
 }
 
-if (options.list == true) {
-    console.log(device.getDevices());
-    process.exit(0);
+if (options.webusblist) {
+    console.log(getWebUSBDevices());
 }
 
-if (!options.jsfile || typeof options.jsfile !== 'string') {
-    console.log(usage);
+if (options.list) {
+    console.log(device.getDevices());
+}
+
+if (!options.jsfile) {
     process.exit(0);
 } else {
     source = fs.readFileSync(options.jsfile, 'utf8');
@@ -115,14 +123,26 @@ if (options.debug < 0 || options.debug > 4) {
     device.setDebugLevel(options.debug);
 }
 
-function getWebUSBDevicesList() {
+function getWebUSBDevices() {
+    var webusbDevices,
+        allDevices = device.getDevices();
+
+    webusbDevices = allDevices.filter(device => {
+        var descriptor = device.deviceDescriptor;
+        return isWebUSBDevice(descriptor.idVendor, descriptor.idProduct);
+    });
+
+    return webusbDevices;
+}
+
+function knownDevicesList() {
     var jsonConf = fs.readFileSync(__dirname + '/config/devices.json', 'utf8');
     var devices = JSON.parse(jsonConf);
     return devices;
 }
 
 function isWebUSBDevice(vid, pid) {
-    var  list = getWebUSBDevicesList();
+    var  list = knownDevicesList();
 
     for (var i in list) {
         if (parseInt(list[i].vendorID) === vid &&
@@ -136,7 +156,7 @@ function isWebUSBDevice(vid, pid) {
 
 if (source) {
     if (!options.vid || !options.pid) {
-        var devices = getWebUSBDevicesList();
+        var devices = knownDevicesList();
         var firstDevice = devices[Object.keys(devices)[0]];
         if (!firstDevice) {
             console.log('No WebUSB device exist in the configuration');
