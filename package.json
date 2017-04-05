@@ -16,6 +16,7 @@
   "author": "Sudarsana Nagineni",
   "gypfile": true,
   "dependencies": {
+    "commander": "^2.9.0",
     "lodash": "^4.16.4",
     "nan": "^2.1.0",
     "text-encoding": "^0.6.1",

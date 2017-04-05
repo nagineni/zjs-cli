@@ -3,7 +3,7 @@
 'use strict';
 
 var device = require('./lib/usbDevice'),
-    args = process.argv.slice(2),
+    program = require('commander'),
     encoding = require('text-encoding'),
     fs = require('fs'),
     ihex = require('./lib/ihex-web.js'),
@@ -12,115 +12,52 @@ var device = require('./lib/usbDevice'),
     usbDevice = null,
     webInterface = null;
 
-var options = {
-    help: false,
-    list: false,
-    vid: null,
-    pid: null,
-    jsfile: null,
-    debug: 0,
-    webusbdevices: false
-};
+program
+  .version('0.0.1')
+  .description('JavaScript CLI for Zephyr OS')
+  .usage("-c -f <JavaScript file to upload>")
+  .option('-c, --connect', 'Connect to the WebUSB device')
+  .option('-d, --debug <level: 0 to 4>', 'Set the libusb debug level', parseInt)
+  .option('-l, --list', 'List all connected USB devices')
+  .option('-v, --vid <Vedor ID>', 'Vedor ID of the USB device', parseInt)
+  .option('-p, --pid <Product ID>', 'Product ID of the USB device', parseInt)
+  .option('-f, --file <JavaScript file>', 'JavaScript file to upload and execute')
+  .option('-w, --webusblist', 'List all connected WebUSB devices')
+  .parse(process.argv);
 
-const usage = 'usage: node iotjs-cli.js -f <JavaScript file to upload>\n' +
-'options: \n' +
-'  -d --debug <level: 0 to 4>       Set the libusb debug level\n' +
-'  -h --help                        Output usage information\n' +
-'  -l --list                        List all connected USB devices\n' +
-'  -v --vendor-id <Vedor ID>        Vedor ID of the USB device\n' +
-'  -p --product-id <Product ID>     Product ID of the USB device\n' +
-'  -f --file <JavaScript file>      JavaScript file to upload and execute\n' +
-'  -w --webusblist                  List all connected WebUSB devices\n';
-
-for (var i = 0; i < args.length; i++) {
-    var arg = args[i];
-
-    switch (arg) {
-        case '-h':
-        case '--help':
-            options.help = true;
-            break;
-        case '-l':
-        case '--list':
-            options.list = true;
-            break;
-        case '-w':
-        case '--webusblist':
-            options.webusblist = true;
-            break;
-        case '-d':
-        case '--debuglevel':
-            var level = args[i + 1];
-            if (typeof level == 'undefined') {
-                options.help = true;
-                break;
-            }
-            options.debug = parseInt(level);
-            break;
-        case '-p':
-        case '--product-id':
-            var pid = args[i + 1];
-            if (typeof pid == 'undefined') {
-                options.help = true;
-                break;
-            }
-            options.pid = parseInt(pid);
-            break;
-        case '-v':
-        case '--vendor-id':
-            var vid = args[i + 1];
-            if (typeof vid == 'undefined') {
-                options.help = true;
-                break;
-            }
-            options.vid = parseInt(vid);
-            break;
-        case '-f':
-        case '--file':
-            var js = args[i + 1];
-            if (typeof js == 'undefined') {
-                options.help = true;
-                break;
-            }
-            options.jsfile = js;
-            break;
-    }
+if (!process.argv.slice(2).length || program.h) {
+    program.help();
 }
 
-if (!args.length || options.help == true) {
-    console.log(usage);
-    process.exit(0);
-}
-
-if (options.pid !== null && !Number.isInteger(options.pid)) {
+if (program.pid !== undefined && isNaN(program.pid)) {
     console.log("Product ID must be a non-empty numeric value.");
     process.exit(0);
 }
 
-if (options.vid !== null && !Number.isInteger(options.vid)) {
+if (program.vid !== undefined && isNaN(program.vid)) {
     console.log("Vendor ID must be a non-empty numeric value.");
     process.exit(0);
 }
 
-if (options.webusblist) {
+if (program.webusblist) {
     console.log(getWebUSBDevices());
 }
 
-if (options.list) {
+if (program.list) {
     console.log(device.getDevices());
 }
 
-if (!options.jsfile) {
-    process.exit(0);
-} else {
-    source = fs.readFileSync(options.jsfile, 'utf8');
+if (program.debug !== undefined) {
+    if (isNaN(program.debug) || program.debug < 0 || program.debug > 4) {
+        program.help();
+    } else {
+        device.setDebugLevel(program.debug);
+    }
 }
 
-if (options.debug < 0 || options.debug > 4) {
-    console.log(usage);
-    process.exit(0);
-} else {
-    device.setDebugLevel(options.debug);
+if (program.file) {
+    program.connect = true;
+    source = fs.readFileSync(program.file, 'utf8');
 }
 
 function getWebUSBDevices() {
@@ -154,24 +91,24 @@ function isWebUSBDevice(vid, pid) {
     return false;
 }
 
-if (source) {
-    if (!options.vid || !options.pid) {
+if (program.connect) {
+    if (!program.vid || !program.pid) {
         var devices = knownDevicesList();
         var firstDevice = devices[Object.keys(devices)[0]];
         if (!firstDevice) {
             console.log('No WebUSB device exist in the configuration');
             process.exit(0);
         }
-        options.vid = firstDevice.vendorID;
-        options.pid = firstDevice.productID;
+        program.vid = firstDevice.vendorID;
+        program.pid = firstDevice.productID;
         webInterface = firstDevice.WebUSBInterface;
         console.log("No VID or PID provided, so try to connect to the first known WebUSB device in the configuration.");
-    } else if (!isWebUSBDevice(options.vid, options.pid)) {
+    } else if (!isWebUSBDevice(program.vid, program.pid)) {
         console.log('No WebUSB device exist in the configuration for the given VID and PID');
         process.exit(0);
     }
 
-    device.findDevice(options.vid, options.pid).then((device) => {
+    device.findDevice(program.vid, program.pid).then((device) => {
         usbDevice = device;
         init();
     }).catch((error) => {
@@ -218,24 +155,23 @@ function transfer(source) {
         send(line + '\n');
     }
     send('run temp.dat' + '\n');
-    send('set transfer raw\r\n');
+    send('set transfer raw\n');
 }
 
 function parseData() {
     var stream = '';
 
     return function(data) {
+        if (data.includes("acm>") && data.length <= 18) {
+            process.stdout.write(data.replace(/\r/g,""));
+            return;
+        }
         stream += data;
         var lines = stream.split('\n');
 
         stream = lines.pop();
         for (var i in lines) {
-            // Workaround to handle 'acm>' prompt with color code.
-            if (lines[i].includes("acm>") && lines[i].length === 18) {
-               process.stdout.write(lines[i].replace(/\r/g,""));
-            }else {
-               console.log(lines[i]);
-            }
+            console.log(lines[i]);
         }
     };
 }
@@ -257,7 +193,6 @@ function init() {
                  } else if (str === 'ihex') {
                      rawMode = false;
                  }
-
                  skip = !rawMode && /^(\n|\[.*\])/.test(str);
                  if (!skip) {
                      if (str.length === 1 &&
@@ -291,7 +226,12 @@ function init() {
             return usbDevice.controlTransferOut(0x22, 0x01, 0x02);
         }).then((data) => {
             // Wait 1 sec for the device to do all settings
-            setTimeout(() => transfer(source), 1000);
+            if (source) {
+                setTimeout(() => transfer(source), 1000);
+            } else {
+                process.stdout.write("\u001b[33macm> \u001b[39;0m");
+            }
+            initReadableStream();
         }).catch((error) => {
             console.log('USB Error: ' + error);
             exitHandler();
@@ -308,31 +248,36 @@ function exitHandler() {
             console.log('Failed to close the USB device!');
             process.exit();
         });
+    } else {
+        process.exit();
     }
 }
 
-var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
+function initReadableStream()
+{
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
 
-rl.on('line', (input) => {
-    if (!input) {
-        process.stdout.write("\u001b[33macm> \u001b[39;0m");
-    } else if (input === "load" || input === 'eval') {
-        console.log("'load' and 'eval' commands are unsupported in CLI mode");
-        // print 'acm>' prompt.
-        process.stdout.write("\u001b[33macm> \u001b[39;0m");
-    } else if (input === "quit" || input === 'exit') {
+    rl.on('line', (input) => {
+        if (!input) {
+            process.stdout.write("\u001b[33macm> \u001b[39;0m");
+        } else if (input.includes("load") || input.includes("eval")) {
+            console.log("'load' and 'eval' commands are unsupported in CLI mode");
+            // print 'acm>' prompt.
+            process.stdout.write("\u001b[33macm> \u001b[39;0m");
+        } else if (input === "quit" || input === 'exit') {
+            exitHandler();
+        } else {
+            send(input + '\n');
+        }
+    });
+
+    rl.on('SIGINT', () => {
         exitHandler();
-    } else {
-        send(input + '\r\n');
-    }
-});
-
-rl.on('SIGINT', () => {
-    exitHandler();
-});
+    });
+}
 
 // Press Ctrl+C to exit the process
 process.on('SIGINT', exitHandler);
