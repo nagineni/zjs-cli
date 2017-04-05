@@ -1,10 +1,10 @@
 {
   "name": "zephyrjs-cli",
-  "version": "0.0.1",
+  "version": "0.0.1-1",
   "description": "JavaScript CLI for Zephyr OS",
   "repository": "https://github.com/nagineni/zephyrjs-cli",
   "license": "Apache-2.0",
-  "main": "lib/usbDevice.js",
+  "main": "index.js",
   "keywords": [
     "WebUSB",
     "usb",
@@ -15,6 +15,7 @@
   },
   "author": "Sudarsana Nagineni",
   "gypfile": true,
+  "bin": "zephyrjs-cli.js",
   "dependencies": {
     "commander": "^2.9.0",
     "lodash": "^4.16.4",
