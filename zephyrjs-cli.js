@@ -33,7 +33,7 @@ program
   .option('-c, --connect', 'Connect to the WebUSB device')
   .option('-d, --debug <level: 0 to 4>', 'Set the libusb debug level', parseInt)
   .option('-l, --list', 'List all connected USB devices')
-  .option('-v, --vid <Vedor ID>', 'Vedor ID of the USB device', parseInt)
+  .option('-v, --vid <Vendor ID>', 'Vendor ID of the USB device', parseInt)
   .option('-p, --pid <Product ID>', 'Product ID of the USB device', parseInt)
   .option('-f, --file <JavaScript file>', 'JavaScript file to upload and execute')
   .option('-w, --webusblist', 'List all connected WebUSB devices')

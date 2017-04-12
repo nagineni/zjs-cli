@@ -20,7 +20,7 @@ options:
   -d --debug <level: 0 to 4>       Set the libusb debug level
   -h --help                        Output usage information
   -l --list                        List all available USB devices
-  -v --vendor-id <Vedor ID>        Vedor ID of the USB device
+  -v --vendor-id <Vendor ID>        Vendor ID of the USB device
   -p --product-id <Product ID>     Product ID of the USB device
   -f --file <JavaScript file>      JavaScript file to upload and execute
 ```
