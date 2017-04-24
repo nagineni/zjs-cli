@@ -8,7 +8,7 @@ directly from the command line.
 
 Start the tool to connect and upload JS code to a Zephyr board
 
-```$ node zephyrjs-cli.js -f test/HelloWorld.js```
+```$ node zephyrjs-cli.js -c -f test/HelloWorld.js```
 
 ## Command Line Options
 
@@ -16,11 +16,19 @@ The command line options
 ```
 $ node zephyrjs-cli.js -h
 
-options:
-  -d --debug <level: 0 to 4>       Set the libusb debug level
-  -h --help                        Output usage information
-  -l --list                        List all available USB devices
-  -v --vendor-id <Vendor ID>        Vendor ID of the USB device
-  -p --product-id <Product ID>     Product ID of the USB device
-  -f --file <JavaScript file>      JavaScript file to upload and execute
+  Usage: zephyrjs-cli -c -f <JavaScript file to upload>
+
+  JavaScript CLI for Zephyr OS
+
+  Options:
+
+    -h, --help                    output usage information
+    -V, --version                 output the version number
+    -c, --connect                 Connect to the WebUSB device
+    -d, --debug <level: 0 to 4>   Set the libusb debug level
+    -l, --list                    List all connected USB devices
+    -v, --vid <Vendor ID>         Vendor ID of the USB device
+    -p, --pid <Product ID>        Product ID of the USB device
+    -f, --file <JavaScript file>  JavaScript file to upload and execute
+    -w, --webusblist              List all connected WebUSB devices
 ```
