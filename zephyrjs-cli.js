@@ -166,9 +166,9 @@ function openDevice() {
         }).then(() => {
             return usbDevice.controlTransferOut(0x22, 0x01, 0x02);
         }).then((data) => {
-            // Wait 1 sec for the device to do all settings
+            // Wait 2 sec for the device to do all settings
             if (source) {
-                setTimeout(() => transfer(source), 1000);
+                setTimeout(() => transfer(source), 2000);
             } else {
                 process.stdout.write('\u001b[33macm> \u001b[39;0m');
             }
