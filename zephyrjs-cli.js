@@ -77,7 +77,7 @@ if (program.file) {
 
 if (program.connect) {
     if (!program.vid || !program.pid) {
-        console.log('No VID or PID provided, so try to connect to the first known WebUSB device in the configuration.');
+        console.log('No VID or PID provided, so connecting to the first known WebUSB device in the configuration.');
         program = utils.getFirstKnownDevice();
     } else if (!utils.isWebUSBDevice(program.vid, program.pid)) {
         console.log('No WebUSB device exist in the configuration for the given VID and PID');
@@ -100,6 +100,7 @@ function send(string) {
 }
 
 function transfer(source) {
+    send('echo off\n');
     send('set transfer ihex\n');
     send('stop\n');
     send('load\n');
@@ -114,6 +115,7 @@ function transfer(source) {
     }
     send('run temp.dat' + '\n');
     send('set transfer raw\n');
+    send('echo on\n');
 }
 
 function openDevice() {
@@ -121,32 +123,50 @@ function openDevice() {
             // Setup event handlers.
             let printData = utils.parseData();
             let rawMode = true;
+            let echoMode = true;
             let previousRead;
 
             // Setup event handlers.
             usbDevice.on('data', (event) => {
                 let skip = true;
+                let skip_prompt = true;
                 let str = new encoding.TextDecoder('utf-8').decode(event.data);
+
 
                 if (str === 'raw') {
                     rawMode = true;
+                    str = '';
                 } else if (str === 'ihex') {
                     rawMode = false;
+                    str = '';
                 }
                 skip = !rawMode && /^(\n|\[.*\])/.test(str);
-                if (!skip) {
+
+                if (str === 'echo_off') {
+                    echoMode = false;
+                    str = '';
+                } else if (str === 'echo_on') {
+                    echoMode = true;
+                    str = '';
+                }
+
+                skip_prompt = !echoMode && /^(\r|\n|\x1b\[)/.test(str);
+
+                if (!skip && !skip_prompt) {
                     if (str.length === 1 &&
                         str.charCodeAt(0) !== 13 &&
                         str.charCodeAt(0) !== 10 &&
                         previousRead !== undefined &&
                         previousRead.charCodeAt(
                            previousRead.length - 1) === 13) {
-                        str = '\n' + str;
+                        str = '\r\n' + str;
                     }
 
-                    previousRead = str;
-                    printData(previousRead);
+                    printData(str);
                 }
+
+                if (!skip)
+                    previousRead = str;
             });
 
             usbDevice.on('error', (event) => {
