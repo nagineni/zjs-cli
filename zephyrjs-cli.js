@@ -20,11 +20,14 @@ var device = require('./lib/usbDevice'),
     program = require('commander'),
     encoding = require('text-encoding'),
     fs = require('fs'),
+    path = require('path'),
     readline = require('readline'),
     utils = require('./lib/cliUtils'),
     transferUtils = require('./lib/transferUtils'),
-    source = null,
-    usbDevice = null;
+    data = null,
+    usbDevice = null,
+    baseName = null,
+    saveFile = false;
 
 program
   .version('0.0.1')
@@ -36,6 +39,7 @@ program
   .option('-v, --vid <Vendor ID>', 'Vendor ID of the USB device', parseInt)
   .option('-p, --pid <Product ID>', 'Product ID of the USB device', parseInt)
   .option('-f, --file <JavaScript file>', 'JavaScript file to upload and execute')
+  .option('-s, --save <JavaScript file>', 'Save file to device')
   .option('-w, --webusblist', 'List all connected WebUSB devices')
   .parse(process.argv);
 
@@ -72,7 +76,18 @@ if (program.debug !== undefined) {
 
 if (program.file) {
     program.connect = true;
-    source = fs.readFileSync(program.file, 'utf8');
+    data = fs.readFileSync(program.file, 'utf8');
+}
+
+if (program.save) {
+    baseName = path.basename(program.save);
+    if (!utils.isValidFilename(baseName)) {
+        console.log('Error: Filename should be in the 8.3 format');
+        process.exit();
+    }
+    program.connect = true;
+    saveFile = true;
+    data = fs.readFileSync(program.save, 'utf8');
 }
 
 if (program.connect) {
@@ -99,14 +114,18 @@ function send(string) {
     });
 }
 
-function transfer(source) {
+function transfer(data) {
+    if (saveFile) {
+        saveToDevice(data);
+        return;
+    }
     send('echo off\n');
     send('set transfer ihex\n');
     send('stop\n');
     send('load\n');
 
     let stripped = transferUtils.stripBlankLines(
-        transferUtils.stripComments(source));
+        transferUtils.stripComments(data));
     let ihex = transferUtils.convIHex(stripped);
 
     let line = ihex;
@@ -115,6 +134,22 @@ function transfer(source) {
     }
     send('run temp.dat' + '\n');
     send('set transfer raw\n');
+    send('echo on\n');
+}
+
+function saveToDevice(data) {
+    if (baseName.length === 0)
+        return;
+
+    send('echo off\n');
+    send('set transfer raw\n');
+    send('stop\n');
+    send('load ' + baseName + '\n');
+
+    for (let line of data.split('\n')) {
+        send(line + '\n');
+    }
+    send('\x1A\n');
     send('echo on\n');
 }
 
@@ -150,7 +185,7 @@ function openDevice() {
                     str = '';
                 }
 
-                skip_prompt = !echoMode && /^(\r|\n|\x1b\[)/.test(str);
+                skip_prompt = !echoMode && /^(\r|\n|\x1b\[33macm)/.test(str);
 
                 if (!skip && !skip_prompt) {
                     if (str.length === 1 &&
@@ -185,10 +220,10 @@ function openDevice() {
             return usbDevice.listen();
         }).then(() => {
             return usbDevice.controlTransferOut(0x22, 0x01, 0x02);
-        }).then((data) => {
+        }).then((res) => {
             // Wait 2 sec for the device to do all settings
-            if (source) {
-                setTimeout(() => transfer(source), 2000);
+            if (data || saveFile) {
+                setTimeout(() => transfer(data), 2000);
             } else {
                 process.stdout.write('\u001b[33macm> \u001b[39;0m');
             }
