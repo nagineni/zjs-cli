@@ -11,7 +11,7 @@
     "zephyr"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/*.test.js"
   },
   "author": "Sudarsana Nagineni",
   "gypfile": true,
@@ -21,6 +21,8 @@
     "lodash": "^4.16.4",
     "nan": "^2.1.0",
     "text-encoding": "^0.6.1",
-    "usb": "1.2.0"
+    "usb": "1.2.0",
+    "mocha": "^3.3.0",
+    "chai": "3.5.0"
   }
 }
