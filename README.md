@@ -1,12 +1,12 @@
-# zephyrjs-cli - JavaScript CLI for ZJS OS
+# zephyrjs-cli - JavaScript CLI for Zephyr OS
 ## Description
 
-Zephyr.js CLI tool that allows you to connect and upload JS code to a Zephyr
-board directly from the command line.
+`CLI tool for Zephyr OS` allows you to connect and upload JavaScript code to a Zephyr
+board, directly from the command line.
 
 ## Prerequisites
 
-The ZJS development environment uses your host computer, the Arduino 101 board.
+The ZJS development environment uses your host computer and Arduino 101 board.
 
 * Ubuntu* 16.04 host.
 * Arduino 101 board with ZJS IDE image.
