@@ -5,17 +5,16 @@ console.log("GPIO test with two LEDs...");
 
 // import gpio module
 var gpio = require("gpio");
-var pins = require("arduino101_pins");
 
-// pins 8 (LED0) and 12 (LED1) are onboard LEDs on Arduino 101
-var pinA = gpio.open({ pin: pins.LED0, activeLow: false });
-var pinB = gpio.open({ pin: pins.LED1, activeLow: true });
+// LED1 and LED2 are onboard LEDs on Arduino 101
+var pinA = gpio.open({pin: 'LED0', activeLow: true});
+var pinB = gpio.open({pin: 'LED1', activeLow: false});
 
 // tick is the delay between blinks
-var tick = 1000, toggle = false;
+var tick = 1000, toggle = 0;
 
 setInterval(function () {
-    toggle = !toggle;
+    toggle = 1 - toggle;
     pinA.write(toggle);
     pinB.write(toggle);
 }, tick);
