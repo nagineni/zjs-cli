@@ -1,4 +1,4 @@
-# zephyrjs-cli - JavaScript CLI for Zephyr OS
+# zjs-cli - JavaScript CLI for Zephyr OS
 ## Description
 
 `CLI tool for Zephyr OS` allows you to connect and upload JavaScript code to a Zephyr
@@ -26,13 +26,13 @@ $ sudo apt-get install build-essential libudev-dev
 
 ### Clone the git repo
 ```bash
-git clone https://github.com/nagineni/zephyrjs-cli.git
+git clone https://github.com/nagineni/zjs-cli.git
 ```
 
 ## Installation
 
 ```bash
-$ cd zephyrjs-cli
+$ cd zjs-cli
 $ npm install
 ```
 
@@ -59,23 +59,23 @@ $ npm install
 
 Plug the board into your computer and start the tool to connect and upload JS code to a Zephyr board
 ```bash
-$ node zephyrjs-cli.js -c -f test/HelloWorld.js
+$ node zjs-cli.js -c -f test/HelloWorld.js
   ```
 
 ## Command Line Options
 
 The command line options
 ```bash
-$ node zephyrjs-cli.js -h
+$ node zjs-cli.js -h
 
-  Usage: zephyrjs-cli -c -f <JavaScript file to upload>
+  Usage: zjs-cli -c -f <JavaScript file to upload>
 
   JavaScript CLI for Zephyr OS
 
   Options:
 
-    -h, --help                    output usage information
-    -V, --version                 output the version number
+    -h, --help                    Output usage information
+    -V, --version                 Output the version number
     -c, --connect                 Connect to the WebUSB device
     -d, --debug <level: 0 to 4>   Set the libusb debug level
     -l, --list                    List all connected USB devices

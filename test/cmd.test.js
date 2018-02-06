@@ -9,7 +9,7 @@ let expect = require('chai').expect,
 describe('Verify command option', function() {
 
     let help_info = [
-        'Usage: zephyrjs-cli -c -f <JavaScript file to upload>',
+        'Usage: zjs-cli -c -f <JavaScript file to upload>',
         'JavaScript CLI for Zephyr OS',
         'Options:',
         '-h, --help                    output usage information',

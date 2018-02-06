@@ -4,7 +4,7 @@ let exec = require('child_process').exec,
     path = require('path');
 
 function run(opt) {
-    let cmd = ['node', 'zephyrjs-cli.js', opt].join(' '),
+    let cmd = ['node', 'zjs-cli.js', opt].join(' '),
         data = {};
     return new Promise((resolve, reject) => {
         exec(cmd, {
