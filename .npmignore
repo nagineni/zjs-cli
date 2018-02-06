@@ -3,3 +3,8 @@ node_modules/
 
 # Ignore vim files
 *.swp
+
+# Ignore tests
+test/
+
+.npmignore
