@@ -12,12 +12,12 @@
   "gypfile": true,
   "bin": "zjs-cli.js",
   "dependencies": {
+    "chai": "3.5.0",
     "commander": "^2.9.0",
     "lodash": "^4.16.4",
+    "mocha": "^3.3.0",
     "nan": "^2.1.0",
     "text-encoding": "^0.6.1",
-    "usb": "1.2.0",
-    "mocha": "^3.3.0",
-    "chai": "3.5.0"
+    "usb": "1.2.0"
   }
 }
